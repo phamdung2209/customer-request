@@ -1,0 +1,15 @@
+.Avada-SC__UnitButton--custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.Avada-SC__UnitButton--custom {
+  margin: 20px 0 10px 0;
+}
+
+.Avada-SC__Table--custom {
+  border-spacing: 2px !important;
+  border-collapse: separate !important;
+  border-color: gray !important;
+}
