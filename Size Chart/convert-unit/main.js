@@ -5,7 +5,7 @@ const app = {
   currentUnit: 'cm',
   originalValues: [],
   convertibleValues: [],
-  enableConvertOtherUnits: false,
+  enableConvertOtherUnits: true,
 
   start: function() {
     this.waitForElements();
@@ -20,6 +20,7 @@ const app = {
     if (this.enableConvertOtherUnits) {
       headerCells.forEach((td, index) => {
         const strongElement = td.querySelector('strong');
+
         const text = strongElement ? strongElement.innerText.trim() : '';
         if (text.includes('(kg)') || text.includes('(lb)')) {
           if (app.currentUnit === 'inch') {
@@ -73,7 +74,7 @@ const app = {
         } else {
           return app.currentUnit === 'inch'
             ? (value / 2.54).toFixed(1) // cm -> inch
-            : app.originalValues[index][i]; // Restore original cm values
+            : (value * 2.54).toFixed(0); // inch -> cm
         }
       });
 
@@ -94,7 +95,7 @@ const app = {
         value =
           app.currentUnit === 'inch'
             ? (value / 2.54).toFixed(1) // cm -> inch
-            : this.originalValues[index]; // Restore original cm value
+            : (value * 2.54).toFixed(0); // inch -> cm
       }
 
       td.innerText = value;
