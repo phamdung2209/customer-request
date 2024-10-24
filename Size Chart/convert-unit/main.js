@@ -40,62 +40,63 @@ const app = {
         const cells = row.querySelectorAll('td');
         cells.forEach((td, cellIndex) => {
           const text = td.innerText.trim();
+          
+          // Store original value if not exists
+          if (!this.originalValues[rowIndex]) {
+            this.originalValues[rowIndex] = {};
+          }
+          if (this.originalValues[rowIndex][cellIndex] === undefined) {
+            this.originalValues[rowIndex][cellIndex] = text;
+          }
+
           if (app.convertibleValues.includes(cellIndex)) {
             console.log(`Row ${rowIndex}, Cell ${cellIndex}: ${text}`);
-            this.handleConvertUnit(td, text, cellIndex);
+            this.handleConvertUnit(td, this.originalValues[rowIndex][cellIndex], cellIndex);
           } else if (!td.children.length && text !== '') {
-            this.handleConvertUnit(td, text, cellIndex);
+            this.handleConvertUnit(td, this.originalValues[rowIndex][cellIndex], cellIndex);
           }
         });
       }
     });
   },
 
-  handleConvertUnit: function(td, text, index) {
+  handleConvertUnit: function(td, originalText, index) {
     const isKgOrLbColumn = app.convertibleValues.includes(index);
 
-    if (text.includes('-')) {
-      const values = text.split('-').map(val => {
+    if (originalText.includes('-')) {
+      const values = originalText.split('-').map(val => {
         return +val
           .trim()
           .replace(/,/g, '')
           .replace(/[^0-9.]/g, '');
       });
 
-      if (!this.originalValues[index]) {
-        this.originalValues[index] = values;
+      if (app.currentUnit === 'cm') {
+        td.innerText = originalText;
+        return;
       }
 
-      const convertedValues = values.map((value, i) => {
+      const convertedValues = values.map(value => {
         if (isKgOrLbColumn) {
-          return app.currentUnit === 'inch'
-            ? (value * 2.20462).toFixed(1) // kg -> lb
-            : (value / 2.20462).toFixed(0); // lb -> kg
+          return this.roundToOneDecimal(value * 2.20462); // kg -> lb
         } else {
-          return app.currentUnit === 'inch'
-            ? (value / 2.54).toFixed(1) // cm -> inch
-            : (value * 2.54).toFixed(0); // inch -> cm
+          return this.roundToOneDecimal(value / 2.54); // cm -> inch
         }
       });
 
-      td.innerText = `${convertedValues[0]}-${convertedValues[1]}`;
+      td.innerText = `${convertedValues[0]} - ${convertedValues[1]}`;
     } else {
-      let value = +text.replace(/,/g, '').replace(/[^0-9.]/g, '');
+      let value = +originalText.replace(/,/g, '').replace(/[^0-9.]/g, '');
 
-      if (!this.originalValues[index]) {
-        this.originalValues[index] = value;
+      if (app.currentUnit === 'cm') {
+        td.innerText = originalText;
+        return;
       }
 
       if (isKgOrLbColumn) {
-        value =
-          app.currentUnit === 'inch'
-            ? (value * 2.20462).toFixed(1) // kg -> lb
-            : (value / 2.20462).toFixed(0); // lb -> kg
+        value = this.roundToOneDecimal(value * 2.20462); // kg -> lb
       } else {
-        value =
-          app.currentUnit === 'inch'
-            ? (value / 2.54).toFixed(1) // cm -> inch
-            : (value * 2.54).toFixed(0); // inch -> cm
+        value = this.roundToOneDecimal(value / 2.54); // cm -> inch
       }
 
       td.innerText = value;
@@ -154,6 +155,10 @@ const app = {
     activeButton.style.color = 'rgb(255, 255, 255)';
     inactiveButton.style.backgroundColor = 'transparent';
     inactiveButton.style.color = 'rgb(32, 34, 35)';
+  },
+
+  roundToOneDecimal: function(number = 0) {
+    return Math.round(number * 10) / 10;
   }
 };
 
