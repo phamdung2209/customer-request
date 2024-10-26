@@ -9,13 +9,13 @@ const app = {
 
   start: function() {
     this.waitForElements();
+    this.observeElement('#Avada-SC__Table');
   },
 
   render: function() {
     const avadaTableData = $$('#Avada-SC__Table--custom tbody tr');
     const headerRow = avadaTableData[0];
 
-    // Find columns with 'kg' or 'lb' in the header row
     const headerCells = headerRow.querySelectorAll('td');
     if (this.enableConvertOtherUnits) {
       headerCells.forEach((td, index) => {
@@ -36,12 +36,10 @@ const app = {
 
     avadaTableData.forEach((row, rowIndex) => {
       if (rowIndex > 0) {
-        // Skip the header row
         const cells = row.querySelectorAll('td');
         cells.forEach((td, cellIndex) => {
           const text = td.innerText.trim();
-          
-          // Store original value if not exists
+
           if (!this.originalValues[rowIndex]) {
             this.originalValues[rowIndex] = {};
           }
@@ -77,11 +75,9 @@ const app = {
       }
 
       const convertedValues = values.map(value => {
-        if (isKgOrLbColumn) {
-          return this.roundToOneDecimal(value * 2.20462); // kg -> lb
-        } else {
-          return this.roundToOneDecimal(value / 2.54); // cm -> inch
-        }
+        return isKgOrLbColumn
+          ? this.roundToOneDecimal(value * 2.20462) // kg -> lb
+          : this.roundToOneDecimal(value / 2.54); // cm -> inch
       });
 
       td.innerText = `${convertedValues[0]} - ${convertedValues[1]}`;
@@ -93,11 +89,9 @@ const app = {
         return;
       }
 
-      if (isKgOrLbColumn) {
-        value = this.roundToOneDecimal(value * 2.20462); // kg -> lb
-      } else {
-        value = this.roundToOneDecimal(value / 2.54); // cm -> inch
-      }
+      value = isKgOrLbColumn
+        ? this.roundToOneDecimal(value * 2.20462) // kg -> lb
+        : this.roundToOneDecimal(value / 2.54); // cm -> inch
 
       td.innerText = value;
     }
@@ -113,6 +107,7 @@ const app = {
       const avadaTable = $('#Avada-SC__Table--custom');
       if (avadaBtnCm && avadaBtnInch) {
         clearInterval(interval);
+        avadaTable.classList.add('notranslate');
         this.handleEvent(avadaBtnCm, avadaBtnInch, avadaTable);
       }
       elapsedTime += intervalTime;
@@ -159,6 +154,30 @@ const app = {
 
   roundToOneDecimal: function(number = 0) {
     return Math.round(number * 10) / 10;
+  },
+
+  observeElement: function(el) {
+    const addClassToAvadaTable = () => {
+      const avadaTable = $(el);
+      if (avadaTable) {
+        avadaTable.classList.add('notranslate');
+        return true;
+      }
+      return false;
+    };
+
+    const observer = new MutationObserver(() => {
+      if (addClassToAvadaTable()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    addClassToAvadaTable();
   }
 };
 
