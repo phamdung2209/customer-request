@@ -38,6 +38,10 @@ const app = {
       if (rowIndex > 0) {
         const cells = row.querySelectorAll('td');
         cells.forEach((td, cellIndex) => {
+          // Remove <br> elements if they exist in the cell
+          const brElements = td.querySelectorAll('br');
+          brElements.forEach(br => br.remove());
+
           const text = td.innerText.trim();
 
           if (!this.originalValues[rowIndex]) {
