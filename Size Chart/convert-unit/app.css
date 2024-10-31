@@ -13,3 +13,20 @@
   border-collapse: separate !important;
   border-color: gray !important;
 }
+
+
+/* Căn giữa popup */
+@media only screen and (max-width: 749px) {
+  #Avada-SC__Modal .Avada-Modal__Container .Avada-Modal__ContainerWrapper {
+    width: 84% !important;
+    top: 18% !important;
+    left: 8% !important;
+    right: 0% !important;
+    height: fit-content !important;
+  }
+
+  #avada-modal-content {
+    max-height: 50vh;
+    min-height: 200px;
+  }
+}
